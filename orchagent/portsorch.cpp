@@ -2425,6 +2425,24 @@ task_process_status PortsOrch::setPortInterfaceType(sai_object_id_t port_id, sai
     return task_success;
 }
 
+task_process_status PortsOrch::setPortUnreliableLOS(sai_object_id_t port_id, bool enabled)
+{
+    SWSS_LOG_ENTER();
+    sai_attribute_t attr;
+    sai_status_t status;
+
+    attr.id = SAI_PORT_ATTR_UNRELIABLE_LOS_ENABLE;
+    attr.value.booldata = enabled;
+
+    status = sai_port_api->set_port_attribute(port_id, &attr);
+    if (status != SAI_STATUS_SUCCESS)
+    {
+        return handleSaiSetStatus(SAI_API_PORT, status);
+    }
+
+    return task_success;
+}
+
 task_process_status PortsOrch::setPortAdvInterfaceTypes(sai_object_id_t port_id, std::vector<uint32_t> &interface_types)
 {
     SWSS_LOG_ENTER();
@@ -3101,6 +3119,7 @@ void PortsOrch::doPortTask(Consumer &consumer)
             string adv_speeds_str;
             string interface_type_str;
             string adv_interface_types_str;
+            string unreliable_los_str;
             vector<uint32_t> adv_speeds;
             sai_port_interface_type_t interface_type;
             vector<uint32_t> adv_interface_types;
@@ -3180,6 +3199,10 @@ void PortsOrch::doPortTask(Consumer &consumer)
                 else if (fvField(i) == "interface_type")
                 {
                     interface_type_str = fvValue(i);
+                }
+                else if (fvField(i) == "unreliable_los")
+                {
+                    unreliable_los_str = fvValue(i);
                 }
                 /* Set advertised interface type */
                 else if (fvField(i) == "adv_interface_types")
@@ -3626,6 +3649,12 @@ void PortsOrch::doPortTask(Consumer &consumer)
                         p.m_interface_type = interface_type;
                         m_portList[alias] = p;
                     }
+                }
+
+                if (!unreliable_los_str.empty()) {
+                    bool unreliable_los_enabled = (unreliable_los_str == "true") ? true: false;
+                    SWSS_LOG_NOTICE("Set port %s unreliable_los to %d", alias.c_str(), unreliable_los_enabled);
+                    setPortUnreliableLOS(p.m_port_id, unreliable_los_enabled);
                 }
 
                 if (!adv_interface_types_str.empty())

@@ -420,6 +420,7 @@ private:
     task_process_status setPortInterfaceType(sai_object_id_t id, sai_port_interface_type_t interface_type);
     task_process_status setPortAdvInterfaceTypes(sai_object_id_t id, std::vector<uint32_t> &interface_types);
     task_process_status setPortLinkTraining(const Port& port, bool state);
+    task_process_status setPortUnreliableLOS(sai_object_id_t id, bool enabled);
 
     void updatePortOperStatus(Port &port, sai_port_oper_status_t status);
 
